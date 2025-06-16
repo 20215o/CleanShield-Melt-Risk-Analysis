@@ -158,53 +158,56 @@ if df is not None:
     st.pyplot(plt)
 
     # Prediction and Solution System
-st.subheader("Melt Risk Prediction & Solutions")
-if 'model' in locals():
-    st.write("Adjust values to predict melt risk and get solutions.")
-    input_data = {}
-    for feature in features:
-        input_data[feature] = st.slider(f"{feature}", float(df[feature].min()), float(df[feature].max()), float(df[feature].mean()), help=f"Slide {feature} value.")
-    input_df = pd.DataFrame([input_data])
-    prediction = model.predict(input_df)[0]
-    st.write(f"**Predicted Melt Risk**: {prediction:.2f}")
+    st.subheader("Melt Risk Prediction & Solutions")
+    if 'model' in locals():
+        st.write("Adjust values to predict melt risk and get solutions.")
+        input_data = {}
+        for feature in features:
+            input_data[feature] = st.slider(f"{feature}", float(df[feature].min()), float(df[feature].max()), float(df[feature].mean()), help=f"Slide {feature} value.")
+        input_df = pd.DataFrame([input_data])
+        prediction = model.predict(input_df)[0]
+        st.write(f"**Predicted Melt Risk**: {prediction:.2f}")
 
-    # Alert and Solution System
-    if prediction > 75:
-        st.error("**High Melt Risk Alert (>75)**: Immediate action needed!")
-        st.write("**Solutions**: Install shading, enforce PM2.5 controls, deploy artificial snowmaking.")
-    elif prediction > 50:
-        st.warning("**Medium Melt Risk Alert (>50)**: Preventive steps required.")
-        st.write("**Solutions**: Monitor temperature/albedo, reduce pollution, plan water management.")
+        # Alert and Solution System
+        if prediction > 75:
+            st.error("**High Melt Risk Alert (>75)**: Immediate action needed!")
+            st.write("**Solutions**: Install shading, enforce PM2.5 controls, deploy artificial snowmaking.")
+        elif prediction > 50:
+            st.warning("**Medium Melt Risk Alert (>50)**: Preventive steps required.")
+            st.write("**Solutions**: Monitor temperature/albedo, reduce pollution, plan water management.")
+        else:
+            st.success("**Low Melt Risk Alert (≤50)**: Maintain vigilance.")
+            st.write("**Solutions**: Continue monitoring, promote sustainability, educate communities.")
+
+        # Comparative Analysis
+        avg_melt_risk = df['melt_risk'].mean()
+        st.write(f"**Comparison**: Prediction ({prediction:.2f}) vs. Average ({avg_melt_risk:.2f}).")
+        if prediction > avg_melt_risk:
+            st.write("**Insight**: Above average—prioritize mitigation.")
+        else:
+            st.write("**Insight**: Below average—focus on prevention.")
+
+        # Real-Time Alert Simulation
+        if prediction > 75:
+            st.error("**Urgent Notification**: High melt risk detected! Act now.")
+
+        # Enhanced Action Plan (Text Simulation)
+        if st.button("Generate Action Plan"):
+            st.write("Button clicked, generating action plan...")  # Debug message
+            action_plan = f"""
+            **Community Action Plan for Glacier Melt Mitigation**
+            - **Risk Assessment**: Predicted Melt Risk: {prediction:.2f} ({'High (>75)' if prediction > 75 else 'Medium (>50)' if prediction > 50 else 'Low (≤50)'})
+            - **Recommended Actions**:
+              - {'Install shading structures.' if prediction > 75 else 'Monitor temperature and albedo.' if prediction > 50 else 'Continue regular monitoring.'}
+              - {'Enforce air pollution controls.' if prediction > 75 else 'Reduce local pollution sources.' if prediction > 50 else 'Promote sustainable practices.'}
+              - {'Deploy artificial snowmaking.' if prediction > 75 else 'Plan water management.' if prediction > 50 else 'Educate communities.'}
+            - **Local Resources**:
+              - Collaborate with environmental groups.
+              - Seek government funding.
+              - Engage community leaders.
+            """
+            st.text(action_plan)
+            st.download_button(label="Download Action Plan (Text)", data=action_plan, file_name=f"action_plan_{prediction:.2f}.txt", mime="text/plain")
+            st.write("Download this text plan to share with your community.")
     else:
-        st.success("**Low Melt Risk Alert (≤50)**: Maintain vigilance.")
-        st.write("**Solutions**: Continue monitoring, promote sustainability, educate communities.")
-
-    # Comparative Analysis
-    avg_melt_risk = df['melt_risk'].mean()
-    st.write(f"**Comparison**: Prediction ({prediction:.2f}) vs. Average ({avg_melt_risk:.2f}).")
-    if prediction > avg_melt_risk:
-        st.write("**Insight**: Above average—prioritize mitigation.")
-    else:
-        st.write("**Insight**: Below average—focus on prevention.")
-
-    # Real-Time Alert Simulation
-    if prediction > 75:
-        st.error("**Urgent Notification**: High melt risk detected! Act now.")
-
-    # Enhanced Action Plan (Text Simulation)
-    if st.button("Generate Action Plan"):
-        action_plan = f"""
-        **Community Action Plan for Glacier Melt Mitigation**
-        - **Risk Assessment**: Predicted Melt Risk: {prediction:.2f} ({'High (>75)' if prediction > 75 else 'Medium (>50)' if prediction > 50 else 'Low (≤50)'})
-        - **Recommended Actions**:
-          - {'Install shading structures.' if prediction > 75 else 'Monitor temperature and albedo.' if prediction > 50 else 'Continue regular monitoring.'}
-          - {'Enforce air pollution controls.' if prediction > 75 else 'Reduce local pollution sources.' if prediction > 50 else 'Promote sustainable practices.'}
-          - {'Deploy artificial snowmaking.' if prediction > 75 else 'Plan water management.' if prediction > 50 else 'Educate communities.'}
-        - **Local Resources**:
-          - Collaborate with environmental groups.
-          - Seek government funding.
-          - Engage community leaders.
-        """
-        st.text(action_plan)
-        st.download_button(label="Download Action Plan (Text)", data=action_plan, file_name=f"action_plan_{prediction:.2f}.txt", mime="text/plain")
-        st.write("Download this text plan to share with your community.")
+        st.write("Model not trained. Please click 'Train Model' first.")  # Debug message
