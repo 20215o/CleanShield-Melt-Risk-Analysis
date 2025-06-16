@@ -192,8 +192,8 @@ if df is not None:
             st.error("**Urgent Notification**: High melt risk detected! Act now.")
 
         # Enhanced Action Plan (Text Simulation)
-        if st.button("Generate Action Plan"):
-            action_plan = f"""
+if st.button("Generate Action Plan"):
+    action_plan = f"""
 **Community Action Plan for Glacier Melt Mitigation**
 - **Risk Assessment**: Predicted Melt Risk: {prediction:.2f} ({'High (>75)' if prediction > 75 else 'Medium (>50)' if prediction > 50 else 'Low (≤50)'})
 - **Recommended Actions**:
@@ -205,7 +205,6 @@ if df is not None:
   - Seek government funding.
   - Engage community leaders.
 """
-            st.text(action_plan)
-            st.download_button(label="Download Action Plan (Text)", data=action_plan, file_name=f"action_plan_{prediction:.0f}.txt", mime="text/plain")
-            st.write("Download this text plan to share with your community.")
-''')
+    st.text(action_plan)
+    st.download_button(label="Download Action Plan (Text)", data=action_plan, file_name=f"action_plan_{prediction:.0f}.txt", mime="text/plain")
+    st.write("Download this text plan to share with your community.")
