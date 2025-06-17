@@ -61,6 +61,10 @@ if df is not None:
 else:
     st.warning("No data loaded. Please upload a CSV, provide a URL, or ensure 'curated_glacier_observations.csv' exists.")
 
+# Define features at a higher scope
+features = ['pm25', 'temperature', 'humidity', 'elevation', 'albedo', 
+            'solar_radiation', 'wind_speed', 'snow_depth', 'precipitation']
+
 if df is not None:
     st.subheader("Data Preview")
     st.write("Preview of environmental factors and melt risk.", df.head())
@@ -70,8 +74,6 @@ if df is not None:
     st.subheader("Model Analysis")
     st.write("Train a Random Forest model to predict melt risk.")
     if st.button("Train Model"):
-        features = ['pm25', 'temperature', 'humidity', 'elevation', 'albedo', 
-                   'solar_radiation', 'wind_speed', 'snow_depth', 'precipitation']
         X = df[features]
         y = df['melt_risk']
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
