@@ -29,6 +29,9 @@ Glaciers worldwide are melting at an alarming rate due to a combination of risin
 st.sidebar.header("Settings")
 upload_option = st.sidebar.radio("Data Source", ["Use Curated Data", "Upload CSV", "URL"])
 
+# Initialize df as None
+df = None
+
 # Data loading outside cached function
 if upload_option == "Upload CSV":
     uploaded_file = st.file_uploader("Upload CSV", type=["csv"], help="Upload with columns: pm25, temperature, etc.")
@@ -38,8 +41,12 @@ elif upload_option == "URL":
     url = st.text_input("Enter CSV URL", help="Public URL to CSV (e.g., Google Drive link).")
     if url:
         df = pd.read_csv(url)
-else:
-    df = pd.read_csv("curated_glacier_observations.csv")
+else:  # Use Curated Data
+    try:
+        df = pd.read_csv("curated_glacier_observations.csv")
+    except FileNotFoundError:
+        st.error("Curated data file 'curated_glacier_observations.csv' not found. Please upload a CSV or provide a URL.")
+        df = None
 
 # Cache data processing separately
 @st.cache_data
@@ -49,7 +56,10 @@ def process_data(_df):
         return None
     return _df
 
-df = process_data(df)
+if df is not None:
+    df = process_data(df)
+else:
+    st.warning("No data loaded. Please upload a CSV, provide a URL, or ensure 'curated_glacier_observations.csv' exists.")
 
 if df is not None:
     st.subheader("Data Preview")
@@ -73,13 +83,10 @@ if df is not None:
         mse = mean_squared_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
         
+        st.session_state.model = model  # Store model in session state
+        st.success("Model trained successfully!")  # Confirm training
         st.write(f"**Mean Squared Error**: {mse:.2f}")
         st.write(f"**R² Score**: {r2:.2f}")
-        st.write("Model evaluates melt risk prediction accuracy.")
-
-        feature_importance = pd.DataFrame({'feature': features, 'importance': model.feature_importances_}).sort_values('importance', ascending=False)
-        st.write("**Feature Importance**: Key melt risk drivers.")
-        st.bar_chart(feature_importance.set_index('feature'))
 
     # Visualizations
     st.subheader("Visualizations")
@@ -116,7 +123,7 @@ if df is not None:
         plt.ylabel("Value")
         st.pyplot(plt)
 
-    # New Visualization 1: Line Plot for Time Trends (if date column exists, else use index)
+    # New Visualization 1: Line Plot for Time Trends
     st.subheader("Additional Visualizations")
     if 'date' in df.columns:
         df['date'] = pd.to_datetime(df['date'])
@@ -159,13 +166,13 @@ if df is not None:
 
     # Prediction and Solution System
     st.subheader("Melt Risk Prediction & Solutions")
-    if 'model' in locals():
+    if 'model' in st.session_state:
         st.write("Adjust values to predict melt risk and get solutions.")
         input_data = {}
         for feature in features:
             input_data[feature] = st.slider(f"{feature}", float(df[feature].min()), float(df[feature].max()), float(df[feature].mean()), help=f"Slide {feature} value.")
         input_df = pd.DataFrame([input_data])
-        prediction = model.predict(input_df)[0]
+        prediction = st.session_state.model.predict(input_df)[0]
         st.write(f"**Predicted Melt Risk**: {prediction:.2f}")
 
         # Alert and Solution System
@@ -209,5 +216,6 @@ if df is not None:
             st.text(action_plan)
             st.download_button(label="Download Action Plan (Text)", data=action_plan, file_name=f"action_plan_{prediction:.2f}.txt", mime="text/plain")
             st.write("Download this text plan to share with your community.")
+            st.stop()  # Prevent page reload
     else:
         st.write("Model not trained. Please click 'Train Model' first.")  # Debug message
